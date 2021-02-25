@@ -28,4 +28,13 @@ const update = async (characters, userId) => {
   await chars.save();
 };
 
-module.exports = { save, update };
+const getByUserId = async (userId) => {
+  const characters = await Characters.findOne({ where: { userId: userId } });
+  if (!characters) {
+    return null;
+  }
+
+  return characters.charIds;
+};
+
+module.exports = { save, update, getByUserId };

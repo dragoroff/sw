@@ -1,4 +1,4 @@
-module.exports = function ValidationException() {
-  this.message = "Data is not provided";
+module.exports = function ValidationException(message) {
+  this.message = message || "Data is not provided";
   this.status = 400;
 };
