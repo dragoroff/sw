@@ -1,0 +1,10 @@
+{
+  "database": {
+    "database": "db",
+    "username": "oleg",
+    "password": "db-p4ss",
+    "dialect": "sqlite",
+    "storage": "./database.sqlite",
+    "logging": false
+  }
+}

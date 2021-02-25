@@ -1,0 +1,10 @@
+{
+  "database": {
+    "database": "db",
+    "username": "oleg",
+    "password": "password",
+    "dialect": "sqlite",
+    "storage": ":memory:",
+    "logging": false
+  }
+}

@@ -5,7 +5,7 @@ import sinon from "sinon";
 
 import CharactersList from "../views/CharactersList";
 import { findElement } from "./testUtils";
-import { getData } from "../requests";
+import { getData } from "../actions";
 
 const setupShallow = (props = {}) => {
   return shallow(<CharactersList {...props} />);

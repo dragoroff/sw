@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 import SearchBar from "../../components/SearchBar";
 import Pagination from "../../components/Pagination";
-import { getData } from "../../requests";
+import { getData, postFavouriteChars } from "../../actions";
 
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
@@ -12,6 +12,9 @@ import Favorite from "@material-ui/icons/Favorite";
 import FavoriteBorder from "@material-ui/icons/FavoriteBorder";
 
 import "./index.css";
+import { getIdFromUrl } from "../../utils/stringHandler";
+import { removeElement } from "../../utils/arrHandler";
+import Cookies from "js-cookie";
 
 class CharactersList extends Component {
   constructor() {
@@ -31,8 +34,7 @@ class CharactersList extends Component {
     // leave only name and id
     if (characters.length) {
       characters = characters.map((char) => {
-        const arr = char.url.split("/");
-        const id = arr[arr.length - 2];
+        const id = getIdFromUrl(char);
 
         return {
           id,
@@ -52,7 +54,9 @@ class CharactersList extends Component {
 
     this.setState((state) => ({
       ...state,
-      selected: [...state.selected, id],
+      selected: state.selected.includes(id)
+        ? removeElement(state.selected, id)
+        : [...state.selected, id],
     }));
   };
 
@@ -70,6 +74,7 @@ class CharactersList extends Component {
                     checkedIcon={<Favorite />}
                     name={char.id}
                     onChange={this.selectCharacter}
+                    checked={this.state.selected.includes(char.id)}
                   />
                 }
               />
@@ -103,7 +108,25 @@ class CharactersList extends Component {
     }));
   };
 
+  suggestMovies = () => {
+    if (!this.state.selected.length) {
+      return;
+    }
+
+    const arrCharIds = this.state.characters.map((char) => char.id);
+
+    const charIds = arrCharIds.filter((id) => this.state.selected.includes(id));
+
+    if (!charIds.length) {
+      return;
+    }
+
+    // send selected characters to server and move to next page
+    postFavouriteChars(charIds);
+  };
+
   render() {
+    console.log(Cookies.get("charCookie"));
     let charList;
 
     const isFiltered = this.state.filtered.length || this.state.searchText;
@@ -133,6 +156,7 @@ class CharactersList extends Component {
             style={{ width: "20%" }}
             data-test="suggest-movies"
             className="btn btn-primary btn-sm"
+            onClick={this.suggestMovies}
           >
             Suggest Movies
           </button>

@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import urls from "./urls";
+import { SERVER_URL } from "../config";
 
 export const getCharacters = async (pageNum = 1) => {
   return axios.get(`${urls.getCharacters}?page=${pageNum}`).then((res) => {
@@ -39,4 +40,16 @@ export const getData = async () => {
   }
 
   return characters;
+};
+
+export const postFavouriteChars = (chars) => {
+  return axios
+    .post(
+      `${SERVER_URL}/api/add-characters`,
+      {
+        characters: chars,
+      },
+      { withCredentials: true }
+    )
+    .then((res) => console.log(res));
 };
