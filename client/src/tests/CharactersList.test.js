@@ -1,11 +1,11 @@
 import React from "react";
 import { mount, shallow } from "enzyme";
 import moxios from "moxios";
+import sinon from "sinon";
 
 import CharactersList from "../views/CharactersList";
 import { findElement } from "./testUtils";
-import { getCharacters, getTotalCount, getData } from "../requests";
-import urls from "../requests/urls";
+import { getData } from "../requests";
 
 const setupShallow = (props = {}) => {
   return shallow(<CharactersList {...props} />);
@@ -15,64 +15,110 @@ const setupMount = (props = {}) => {
   return mount(<CharactersList {...props} />);
 };
 
-describe("Elements existing for CharactersList page", () => {
-  test("Search box exists when entering the page", () => {
+describe("Elements existing in CharactersList page", () => {
+  it("Search box exists when entering the page", () => {
     const wrapper = setupMount();
     const search = findElement(wrapper, "search");
     expect(search.length).toBe(1);
   });
 
-  test("Button exists when entering the page", () => {
+  it("Search button exists when entering the page", () => {
+    const wrapper = setupMount();
+    const search = findElement(wrapper, "search-btn");
+    expect(search.length).toBe(1);
+  });
+
+  it("'Suggest Movies' button exists when entering the page", () => {
     const wrapper = setupShallow();
     const button = findElement(wrapper, "suggest-movies");
     expect(button.length).toBe(1);
   });
+
+  it("Pagination exists when entering the page", () => {
+    const wrapper = setupMount();
+    const pagination = findElement(wrapper, "pagination");
+    expect(pagination.length).not.toBe(0);
+  });
 });
 
-// describe("REST for CharactersList page", () => {
-//   beforeEach(() => {
-//     moxios.install();
-//   });
+describe("Search", () => {
+  const characters = [
+    { name: "Luke Skywalker", url: "http://swapi.dev/api/people/1/" },
+    { name: "C-3PO", url: "http://swapi.dev/api/people/2/" },
+    { name: "R2-D2", url: "http://swapi.dev/api/people/3/" },
+  ];
 
-//   afterEach(() => {
-//     moxios.uninstall();
-//   });
+  beforeEach(() => {
+    moxios.install();
+  });
 
-//   test("adds list of characters to state", (done) => {
-//     const results = [
-//       { name: "Luke Skywalker" },
-//       { name: "C-3PO" },
-//       { name: "R2-D2" },
-//     ];
+  afterEach(() => {
+    moxios.uninstall();
+  });
 
-//     const wrapper = setupShallow();
+  it("filters out characters", (done) => {
+    const wrapper = setupMount();
 
-//     moxios.stubRequest(`${urls.getCharacters}`, {
-//       status: 200,
-//       response: {
-//         count: 82,
-//       },
-//     });
+    moxios.stubRequest(/swapi.*/, {
+      status: 200,
+      response: {
+        count: 1,
+        results: characters,
+      },
+    });
 
-//     moxios.wait();
+    let onFulfilled = sinon.spy();
+    getData().then(onFulfilled);
 
-//     for (let num = 1; num < 9; num++) {
-//       moxios.stubRequest(`${urls.getCharacters}?page=${num}`, {
-//         status: 200,
-//         response: {
-//           count: 82,
-//           results: results,
-//         },
-//       });
-//     }
+    moxios.wait(() => {
+      const search = findElement(wrapper, "search");
+      search.simulate("change", { target: { value: "Luke" } });
 
-//     getData();
+      expect(wrapper.state().filtered.length).toEqual(1);
 
-//     moxios.wait(() => {
-//       expect(wrapper.state().characters).toEqual(results);
-//       done();
-//     });
-//   });
+      search.simulate("change", { target: { value: "Empty value" } });
+      expect(wrapper.state().filtered.length).toEqual(0);
 
-//   // test("request and gets data from multiple pages", () => {})
-// });
+      done();
+    });
+  });
+});
+
+describe("REST for CharactersList page", () => {
+  const characters = [
+    { name: "Luke Skywalker", url: "http://swapi.dev/api/people/1/" },
+  ];
+
+  beforeEach(() => {
+    moxios.install();
+  });
+
+  afterEach(() => {
+    moxios.uninstall();
+  });
+
+  it("adds list of characters to state", (done) => {
+    const wrapper = setupShallow();
+
+    moxios.stubRequest(/swapi.*/, {
+      status: 200,
+      response: {
+        count: 1,
+        results: characters,
+      },
+    });
+
+    let onFulfilled = sinon.spy();
+    getData().then(onFulfilled);
+
+    moxios.wait(() => {
+      expect(wrapper.state().characters).toEqual([
+        {
+          id: "1",
+          name: characters[0].name,
+        },
+      ]);
+      done();
+    });
+  });
+});

@@ -22,6 +22,7 @@ export default function CustomPagination(props) {
   return (
     <div className={classes.root}>
       <Pagination
+        data-test="pagination"
         classes={{ ul: classes.ul }}
         count={props.count}
         color="primary"

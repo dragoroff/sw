@@ -18,12 +18,24 @@ export const getTotalCount = async () => {
 
 export const getData = async () => {
   const limit = 10;
-  const totalChars = await getTotalCount();
+  let totalChars;
+
+  try {
+    totalChars = await getTotalCount();
+  } catch (e) {}
+
   const characters = [];
 
   for (let num = 0; num < Math.ceil(totalChars / limit); num++) {
-    const data = await getCharacters(num + 1);
-    characters.push(...data);
+    let data;
+
+    try {
+      data = await getCharacters(num + 1);
+    } catch (e) {}
+
+    if (data) {
+      characters.push(...data);
+    }
   }
 
   return characters;

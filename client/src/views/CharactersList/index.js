@@ -2,7 +2,7 @@ import React, { Component } from "react";
 
 import SearchBar from "../../components/SearchBar";
 import Pagination from "../../components/Pagination";
-import { getCharacters, getTotalCount, getData } from "../../requests";
+import { getData } from "../../requests";
 
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
@@ -21,38 +21,63 @@ class CharactersList extends Component {
       filtered: [],
       page: 1,
       searchText: "",
+      selected: [],
     };
   }
 
   async componentDidMount() {
-    const characters = await getData();
+    let characters = await getData();
 
-    console.log("characters", characters);
+    // leave only name and id
+    if (characters.length) {
+      characters = characters.map((char) => {
+        const arr = char.url.split("/");
+        const id = arr[arr.length - 2];
+
+        return {
+          id,
+          name: char.name,
+        };
+      });
+    }
+
     this.setState((state) => ({
       ...state,
       characters: characters,
     }));
   }
 
+  selectCharacter = (e) => {
+    const id = e.target.name;
+
+    this.setState((state) => ({
+      ...state,
+      selected: [...state.selected, id],
+    }));
+  };
+
   buildCharList = (data) => {
-    return data.map((char, ind) => (
-      <Card key={ind} className="mt-2">
-        <CardContent>
-          <span className="col-3">{char.name}</span>
-          <div className="float-right">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  icon={<FavoriteBorder />}
-                  checkedIcon={<Favorite />}
-                  name="checkedH"
-                />
-              }
-            />
-          </div>
-        </CardContent>
-      </Card>
-    ));
+    return data.map((char, ind) => {
+      return (
+        <Card key={ind} className="mt-2">
+          <CardContent>
+            <span className="col-3">{char.name}</span>
+            <div className="float-right">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    icon={<FavoriteBorder />}
+                    checkedIcon={<Favorite />}
+                    name={char.id}
+                    onChange={this.selectCharacter}
+                  />
+                }
+              />
+            </div>
+          </CardContent>
+        </Card>
+      );
+    });
   };
 
   handlePageChange = (page) => {
@@ -98,7 +123,7 @@ class CharactersList extends Component {
         <div className="row justify-content-center">
           <SearchBar searchHandler={this.handleSearchChange} />
           <div className="mt-5">
-            <button data-test="search" className="btn btn-success btn-sm ">
+            <button data-test="search-btn" className="btn btn-success btn-sm ">
               Search
             </button>
           </div>

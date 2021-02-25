@@ -45,6 +45,7 @@
     "enzyme-adapter-react-16": "^1.15.6",
     "jest-enzyme": "^7.1.2",
     "moxios": "^0.4.0",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "sinon": "^9.2.4"
   }
 }
