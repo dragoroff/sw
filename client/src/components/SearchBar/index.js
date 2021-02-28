@@ -5,7 +5,7 @@ import "./index.css";
 
 function SearchBar(props) {
   return (
-    <div className="mt-5 mr-2">
+    <div className="mt-5 mb-2 mr-2">
       <input
         data-test="search"
         id="searchbar"

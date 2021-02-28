@@ -1,15 +1,12 @@
 import React from "react";
-import { mount, shallow } from "enzyme";
+import { mount } from "enzyme";
 import moxios from "moxios";
 import sinon from "sinon";
 
 import CharactersList from "../views/CharactersList";
 import { findElement } from "./testUtils";
 import { getData } from "../actions";
-
-const setupShallow = (props = {}) => {
-  return shallow(<CharactersList {...props} />);
-};
+import urls from "../actions/urls";
 
 const setupMount = (props = {}) => {
   return mount(<CharactersList {...props} />);
@@ -22,14 +19,8 @@ describe("Elements existing in CharactersList page", () => {
     expect(search.length).toBe(1);
   });
 
-  it("Search button exists when entering the page", () => {
-    const wrapper = setupMount();
-    const search = findElement(wrapper, "search-btn");
-    expect(search.length).toBe(1);
-  });
-
   it("'Suggest Movies' button exists when entering the page", () => {
-    const wrapper = setupShallow();
+    const wrapper = setupMount();
     const button = findElement(wrapper, "suggest-movies");
     expect(button.length).toBe(1);
   });
@@ -68,16 +59,16 @@ describe("Search", () => {
     });
 
     let onFulfilled = sinon.spy();
-    getData().then(onFulfilled);
+    getData(`${urls.getCharacters}?page=${1}`).then(onFulfilled);
 
     moxios.wait(() => {
       const search = findElement(wrapper, "search");
       search.simulate("change", { target: { value: "Luke" } });
 
-      expect(wrapper.state().filtered.length).toEqual(1);
+      expect(wrapper.state("filtered").length).toEqual(1);
 
       search.simulate("change", { target: { value: "Empty value" } });
-      expect(wrapper.state().filtered.length).toEqual(0);
+      expect(wrapper.state("filtered").length).toEqual(0);
 
       done();
     });
@@ -98,7 +89,7 @@ describe("REST for CharactersList page", () => {
   });
 
   it("adds list of characters to state", (done) => {
-    const wrapper = setupShallow();
+    const wrapper = setupMount();
 
     moxios.stubRequest(/swapi.*/, {
       status: 200,
@@ -109,10 +100,10 @@ describe("REST for CharactersList page", () => {
     });
 
     let onFulfilled = sinon.spy();
-    getData().then(onFulfilled);
+    getData(`${urls.getCharacters}?page=${1}`).then(onFulfilled);
 
     moxios.wait(() => {
-      expect(wrapper.state().characters).toEqual([
+      expect(wrapper.state("characters")).toEqual([
         {
           id: "1",
           name: characters[0].name,

@@ -1,9 +1,5 @@
 import React, { Component } from "react";
 
-import SearchBar from "../../components/SearchBar";
-import Pagination from "../../components/Pagination";
-import { getData, postFavouriteChars } from "../../actions";
-
 import Card from "@material-ui/core/Card";
 import CardContent from "@material-ui/core/CardContent";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -11,10 +7,16 @@ import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Favorite from "@material-ui/icons/Favorite";
 import FavoriteBorder from "@material-ui/icons/FavoriteBorder";
 
+import SearchBar from "../../components/SearchBar";
+import Pagination from "../../components/Pagination";
+import CustomButton from "../../components/Button";
+
+import { getCharacters, postFavouriteChars } from "../../actions";
+
 import "./index.css";
+
 import { getIdFromUrl } from "../../utils/stringHandler";
 import { removeElement } from "../../utils/arrHandler";
-import Cookies from "js-cookie";
 
 class CharactersList extends Component {
   constructor() {
@@ -29,12 +31,12 @@ class CharactersList extends Component {
   }
 
   async componentDidMount() {
-    let characters = await getData();
+    let characters = await getCharacters();
 
     // leave only name and id
     if (characters.length) {
       characters = characters.map((char) => {
-        const id = getIdFromUrl(char);
+        const id = getIdFromUrl(char.url);
 
         return {
           id,
@@ -108,7 +110,7 @@ class CharactersList extends Component {
     }));
   };
 
-  suggestMovies = () => {
+  suggestMovies = async () => {
     if (!this.state.selected.length) {
       return;
     }
@@ -122,11 +124,16 @@ class CharactersList extends Component {
     }
 
     // send selected characters to server and move to next page
-    postFavouriteChars(charIds);
+    const userId = await postFavouriteChars(charIds);
+    if (!userId) {
+      return;
+    }
+
+    // else push to next page
+    this.props.history.push(`/films/${userId}`);
   };
 
   render() {
-    console.log(Cookies.get("charCookie"));
     let charList;
 
     const isFiltered = this.state.filtered.length || this.state.searchText;
@@ -142,24 +149,18 @@ class CharactersList extends Component {
     }
 
     return (
-      <div className="char-bg">
+      <div className="">
         <div className="row justify-content-center">
           <SearchBar searchHandler={this.handleSearchChange} />
-          <div className="mt-5">
-            <button data-test="search-btn" className="btn btn-success btn-sm ">
-              Search
-            </button>
-          </div>
         </div>
         <div className="row justify-content-center mt-2">
-          <button
+          <CustomButton
             style={{ width: "20%" }}
-            data-test="suggest-movies"
-            className="btn btn-primary btn-sm"
+            dataTest="suggest-movies"
+            classes="btn btn-primary btn-sm"
             onClick={this.suggestMovies}
-          >
-            Suggest Movies
-          </button>
+            text={{ title: "Suggest Movies" }}
+          />
         </div>
         <div className="row justify-content-center mt-2">
           <div className="d-block">{charList}</div>

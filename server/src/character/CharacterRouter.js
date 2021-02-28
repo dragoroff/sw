@@ -26,13 +26,14 @@ router.post("/api/add-characters", async (req, res, next) => {
 
 router.get("/api/fav-chars/:id", async (req, res, next) => {
   const userId = req.params.id;
+
   const characters = await CharacterService.getByUserId(userId);
 
   if (!characters) {
     return next(new ValidationException("Can't find characters for this user"));
   }
 
-  return res.json({ characters });
+  return res.json({ results: characters });
 });
 
 module.exports = router;

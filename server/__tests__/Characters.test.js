@@ -76,6 +76,6 @@ describe("Get Characters", () => {
     });
 
     const response = await getCharacters(userId);
-    expect(response.body.characters).toEqual(charIds);
+    expect(response.body.results).toEqual(charIds);
   });
 });
